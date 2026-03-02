@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from 'mongoose';
 
 const supportTicketSchema = new mongoose.Schema({
     user: {

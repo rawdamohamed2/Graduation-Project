@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from 'mongoose';
 
 const aiMatchLogSchema = new mongoose.Schema({
     // The booking/order that needs a worker
