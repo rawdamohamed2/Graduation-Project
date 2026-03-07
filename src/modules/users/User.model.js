@@ -3,9 +3,17 @@ import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
 
-    fullName: {
+    firstName: {
         type: String,
-        required: [true, 'Full name is required'],
+        required: [true, 'First name is required'],
+        trim: true,
+        minlength: [3, 'Name is too short'],
+        maxlength: [50, 'Name is too long']
+    },
+
+    lastName: {
+        type: String,
+        required: [true, 'Last name is required'],
         trim: true,
         minlength: [3, 'Name is too short'],
         maxlength: [50, 'Name is too long']
@@ -59,7 +67,6 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-
     isOtpVerified: {
         type: Boolean,
         default: false
@@ -104,6 +111,12 @@ const userSchema = new mongoose.Schema({
 
     address: {
         street: String,
+        // city: {
+        //     type: String,
+        //     required: function () {
+        //         return this.role === "worker";
+        //     }
+        // },
         city: String,
         state: String,
         country: String,

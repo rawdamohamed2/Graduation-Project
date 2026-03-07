@@ -3,7 +3,9 @@ import {
     isAuthenticated,
     login,
     logout,
-    register, resetPassword,
+    registerUser,
+    registerWorker,
+    resetPassword,
     sendResetOtp,
     sendVerifyOtp,
     verifyEmail,
@@ -13,7 +15,8 @@ import {protect} from "../../core/middleware/authMiddleware.js";
 
 const authRouter = Router();
 
-authRouter.post('/register', register);
+authRouter.post('/register/user', registerUser);
+authRouter.post('/register/worker', registerWorker);
 authRouter.post('/login', login);
 authRouter.post('/logout', logout);
 
