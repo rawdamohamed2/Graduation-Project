@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 import connectDB from "./core/config/db.js";
-import './modules/categories/category.model.js';
+import './modules/categories/Category.model.js';
 import authRoutes from './modules/auth/auth.route.js';
 import workerRoutes from './modules/workers/worker.route.js';
 import mongoose from "mongoose";
