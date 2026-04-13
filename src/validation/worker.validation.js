@@ -1,5 +1,5 @@
 import Joi from "joi";
-import {phoneRegex, timeRegex, validDays} from "../core/utils/validation.helper.js";
+import {phoneRegex, timeRegex, validDays,passwordPattern} from "../core/utils/validation.helper.js";
 
 
 
@@ -78,7 +78,7 @@ export const updateWorkerSchema = Joi.object({
         .trim()
         .optional()
         .min(6)
-        .pattern(new RegExp('^(?=.*[A-Z])(?=.*[0-9])(?=.*[@\\-$])[a-zA-Z0-9@\\-$]{6,30}$'))
+        .pattern(passwordPattern)
         .messages({
             "string.min": "Password must be at least 6 characters",
             "string.pattern.base": "Password must contain uppercase letter, number and @ or - or $"

@@ -1,8 +1,10 @@
 import jwt from "jsonwebtoken";
 import User from "../../modules/users/user.model.js";
 import ApiResponse from "../utils/ApiResponse.js";
+import connectDB from "../config/db.js";
 
 export const protect = async (req, res, next) => {
+    await connectDB();
     let token;
 
     if (
