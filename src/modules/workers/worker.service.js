@@ -4,7 +4,7 @@ import Booking from '../bookings/Booking.model.js';
 import Service from '../services/Service.model.js';
 import mongoose from "mongoose";
 import Wallet from '../payments/Wallet.model.js';
-import BookingAssignment from '../bookings/bookingAssignment.model.js';
+import BookingAssignment from '../bookings/BookingAssignment.model.js';
 import Review from '../reviews/Review.model.js';
 import Category from '../categories/Category.model.js';
 import {normalizePhone} from "../../core/utils/normalizePhone.js";
