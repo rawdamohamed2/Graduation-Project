@@ -232,11 +232,11 @@ export const resetPasswordSchema = idSchema.keys({
         .trim()
         .required()
         .min(6)
-        .pattern(new RegExp('^(?=.*[A-Z])(?=.*[0-9])(?=.*[@\\-$])[a-zA-Z0-9@\\-$]{6,30}$'))
+        .pattern(passwordPattern)
         .messages({
             "string.min": "Password must be at least 6 characters",
             "any.required": "Password is required",
-            "string.pattern.base": "Password must contain uppercase letter, number and @ or - or $"
+            "string.pattern.base": "Password must be 8 to 64 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character."
         }),
     confirmPassword: Joi
         .string()
@@ -244,11 +244,11 @@ export const resetPasswordSchema = idSchema.keys({
         .valid(Joi.ref("newPassword"))
         .required()
         .min(6)
-        .pattern(new RegExp('^(?=.*[A-Z])(?=.*[0-9])(?=.*[@\\-$])[a-zA-Z0-9@\\-$]{6,30}$'))
+        .pattern(passwordPattern)
         .messages({
             "any.only": "Confirm password does not match password",
             "string.min": "Password must be at least 6 characters",
             "any.required": "Password is required",
-            "string.pattern.base": "Password must contain uppercase letter, number and @ or - or $"
+            "string.pattern.base": "Password must be 8 to 64 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character."
         }),
 }).unknown(false);

@@ -6,7 +6,7 @@ import './modules/categories/Category.model.js';
 import authRoutes from './modules/auth/auth.route.js';
 import workerRoutes from './modules/workers/worker.route.js';
 import mongoose from "mongoose";
-import serviceRoutes from "./modules/services/Service.route.js";
+import serviceRoutes from "./modules/services/service.route.js";
 import adminRoutes from "./modules/admins/admin.route.js";
 
 const app = express();

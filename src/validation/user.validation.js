@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { phoneRegex } from '../core/utils/validation.helper.js';
+import { phoneRegex, passwordPattern } from '../core/utils/validation.helper.js';
 
 export const updateProfileSchema = Joi.object({
     firstName: Joi.string().trim().min(3).max(50).optional()
@@ -7,18 +7,23 @@ export const updateProfileSchema = Joi.object({
             "string.min": "First name must be at least 3 characters",
             "string.max": "First name cannot exceed 50 characters",
         }),
+
     lastName: Joi.string().trim().min(3).max(50).optional()
         .messages({
             "string.min": "Last name must be at least 3 characters",
             "string.max": "Last name cannot exceed 50 characters",
         }),
+
     email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }).optional()
         .messages({ "string.email": "Please enter a valid email" }),
+
     phone: Joi.string().optional().pattern(phoneRegex)
         .messages({ 'string.pattern.base': 'Please enter a valid phone number' }),
+
     address: Joi.string().max(200).optional()
         .messages({ "string.max": "Address cannot exceed 200 characters" }),
     enabledLocation: Joi.boolean().optional(),
+
     location: Joi.object({
         type: Joi.string().valid('Point').default('Point'),
         coordinates: Joi.array()
@@ -39,22 +44,26 @@ export const updateProfileSchema = Joi.object({
 
 export const changePasswordSchema = Joi.object({
     currentPassword: Joi.string().trim().required().min(6)
+        .pattern(passwordPattern)
         .messages({
             "any.required": "Current password is required",
             "string.empty": "Current password cannot be empty",
-            "string.min": "Password must be at least 6 characters"
+            "string.min": "Password must be at least 6 characters",
+            "string.pattern.base": "Password must be 8 to 64 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character."
         }),
     newPassword: Joi.string().trim().required().min(6)
-        .pattern(new RegExp('^(?=.*[A-Z])(?=.*[0-9])(?=.*[@\\-$])[a-zA-Z0-9@\\-$]{6,30}$'))
+        .pattern(passwordPattern)
         .messages({
             "string.min": "Password must be at least 6 characters",
             "any.required": "New password is required",
-            "string.pattern.base": "Password must contain uppercase letter, number and @ or - or $"
+            "string.pattern.base": "Password must be 8 to 64 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character."
         }),
     confirmPassword: Joi.string().trim().valid(Joi.ref('newPassword')).required()
+        .pattern(passwordPattern)
         .messages({
             "any.only": "Confirm password does not match new password",
-            "any.required": "Confirm password is required"
+            "any.required": "Confirm password is required",
+            "string.pattern.base": "Password must be 8 to 64 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character."
         })
 }).unknown(false);
 

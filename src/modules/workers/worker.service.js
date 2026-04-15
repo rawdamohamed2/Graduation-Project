@@ -7,6 +7,7 @@ import BookingAssignment from '../bookings/BookingAssignment.model.js';
 import Review from '../reviews/Review.model.js';
 import Category from '../categories/Category.model.js';
 import {normalizePhone} from "../../core/utils/normalizePhone.js";
+import {checkExistingUser} from "../auth/auth.service.js";
 
 export const fetchAllWorkers = async (filters) => {
 
@@ -28,7 +29,6 @@ export const fetchAllWorkers = async (filters) => {
             return { workers: [], total: 0, page: parseInt(page), limit: parseInt(limit) };
         }
     }
-
 
     const [workers, total] = await Promise.all([
         WorkerProfile.find(query)
@@ -87,12 +87,19 @@ export const updateWorkerFullProfile = async (userId, updateBody) => {
 
         if (firstName) user.firstName = firstName;
         if (lastName) user.lastName = lastName;
-        if (email) user.email = email;
-        if (phone) user.phone = normalizedPhone;
+        if (email) {
+            await checkExistingUser(email,"");
+            user.email = email;
+        }
+        if (phone) {
+            await checkExistingUser("", phone);
+            user.phone = normalizedPhone
+        }
 
         if (password && password.trim() !== "") {
             user.password = password;
         }
+
         await user.save({ session });
 
         const updatedWorker = await WorkerProfile.findOneAndUpdate(

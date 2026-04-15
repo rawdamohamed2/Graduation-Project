@@ -24,6 +24,7 @@ const serviceSchema = new mongoose.Schema({
     basePrice: {
         type: Number,
         default: 0,
+        required: [true, 'Price is required'],
         min: [0, 'Price cannot be negative']
     },
     estimatedTime: {
@@ -50,11 +51,12 @@ const serviceSchema = new mongoose.Schema({
                 default: 'fixed',
                 required: true
             },
-            values: [{
+            quantity: {
                 type: Number,
                 min: 0,
-                default:1
-            }],
+                default:0,
+                cast: 'quantity is not a valid number'
+            },
             pricePerUnit: {
                 type: Number,
                 min: 0,
