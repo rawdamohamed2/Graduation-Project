@@ -9,22 +9,30 @@ import Category from '../categories/Category.model.js';
 import {changeUserPassword, updateUser} from "../users/user.service.js";
 
 export const getUserIdsByName = async (name) => {
-    if (!name) return null;
-    const users = await User.find({
-        $or: [
-            { firstName: { $regex: name, $options: 'i' } },
-            { lastName: { $regex: name, $options: 'i' } }
-        ]
-    }).select('_id');
-    return users.map(u => u._id);
+    try {
+        if (!name) return null;
+        const users = await User.find({
+            $or: [
+                { firstName: { $regex: name, $options: 'i' } },
+                { lastName: { $regex: name, $options: 'i' } }
+            ]
+        }).select('_id');
+        return users.map(u => u._id);
+    } catch (e) {
+        throw new Error(error.message);
+    }
 };
 
 export const getCategoryIdByName = async (categoryName) => {
-    if (!categoryName) return null;
-    const categoryDoc = await Category.findOne({
-        name: { $regex: `^${categoryName}$`, $options: 'i' }
-    });
-    return categoryDoc ? categoryDoc._id : 'NOT_FOUND';
+    try {
+        if (!categoryName) return null;
+        const categoryDoc = await Category.findOne({
+            name: { $regex: `^${categoryName}$`, $options: 'i' }
+        });
+        return categoryDoc ? categoryDoc._id : 'NOT_FOUND';
+    }catch (e) {
+        throw new Error(error.message);
+    }
 };
 
 export const fetchAllWorkers = async (filters) => {
@@ -78,25 +86,30 @@ export const fetchAllWorkers = async (filters) => {
 
 export const fetchWorkerById = async (id) => {
 
-    const workerProfile = await WorkerProfile.findOne({
-        $or: [
-            { _id: id },
-            { user: id }
-        ]
-    })
-        .select('bio experienceYears city approvalStatus ratingAverage availability isAvailable')
-        .populate('user', 'firstName lastName email phone profileImage address isBlocked')
-        .populate('categories', 'name');
+    try {
+        const workerProfile = await WorkerProfile.findOne({
+            $or: [
+                { _id: id },
+                { user: id }
+            ]
+        })
+            .select('bio experienceYears city approvalStatus ratingAverage availability isAvailable')
+            .populate('user', 'firstName lastName email phone profileImage address isBlocked')
+            .populate('categories', 'name');
 
-    if (!workerProfile) {
-        throw new Error('No worker profile found.');
+        if (!workerProfile) {
+            throw new Error('No worker profile found.');
+        }
+
+        if (workerProfile.user && workerProfile.user.isBlocked) {
+            throw new Error('This worker account is currently suspended.');
+        }
+
+        return workerProfile;
+
+    }catch (e) {
+        throw new Error(e.message);
     }
-
-    if (workerProfile.user && workerProfile.user.isBlocked) {
-        throw new Error('This worker account is currently suspended.');
-    }
-
-    return workerProfile;
 };
 
 export const updateWorkerFullProfile = async (userId, updateBody) => {
@@ -142,140 +155,184 @@ export const updateWorkerFullProfile = async (userId, updateBody) => {
     }
     catch (error) {
         await session.abortTransaction();
-        throw error;
+        throw new Error(error.message);
     } finally {
         await session.endSession();
     }
 };
 
 export const getFullWorkerProfile = async (userId) => {
-    const profile = await WorkerProfile.findOne({ user: userId })
-        .populate('user', 'firstName lastName email phone profileImage isVerified')
-        .populate('categories', 'name')
-        .select('experienceYears city availabilityStatus availability bio approvalStatus createdAt');
+    try {
+        const profile = await WorkerProfile.findOne({ user: userId })
+            .populate('user', 'firstName lastName email phone profileImage isVerified')
+            .populate('categories', 'name')
+            .select('experienceYears city availabilityStatus availability bio approvalStatus createdAt');
 
-    if (!profile) throw new Error('Worker profile not found');
+        if (!profile) throw new Error('Worker profile not found');
 
-    const wallet = await Wallet.findOne({ owner: userId })
-        .select('balance currency isActive');
+        const wallet = await Wallet.findOne({ owner: userId })
+            .select('balance currency isActive');
 
-    return { profile, wallet };
+        return { profile, wallet };
+    }catch (error) {
+        throw new Error(error.message);
+    }
 };
 
 export const updateGeoLocation = async (userId, lat, lng) => {
     if (!userId) throw new Error("User ID is required");
-
-    const updatedUser = await User.findByIdAndUpdate(
-        userId,
-        {
-            location: {
-                type: 'Point',
-                coordinates: [Number(lng), Number(lat)]
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            {
+                location: {
+                    type: 'Point',
+                    coordinates: [Number(lng), Number(lat)]
+                },
+                enabledLocation: true
             },
-            enabledLocation: true
-        },
-        {
-            returnDocument: 'after',
-            runValidators: true
-        }
-    ).select("firstName location lastName");
+            {
+                returnDocument: 'after',
+                runValidators: true
+            }
+        ).select("firstName location lastName");
 
-    if (!updatedUser) {
-        throw new Error("User not found");
+        if (!updatedUser) {
+            throw new Error("User not found");
+        }
+
+        return updatedUser;
+    }catch (e) {
+        throw new Error(e.message);
     }
 
-    return updatedUser;
 };
 
 export const updateAvailabilityStatus = async (userId, status) => {
-    const profile = await WorkerProfile.findOneAndUpdate(
-        { user: userId },
-        { availabilityStatus: status },
-        {
-            returnDocument:"after",
-            new: true, // مرادف لـ returnDocument: 'after'
-            runValidators: true
+    try {
+        const profile = await WorkerProfile.findOneAndUpdate(
+            { user: userId },
+            { availabilityStatus: status },
+            {
+                returnDocument:"after",
+                new: true, // مرادف لـ returnDocument: 'after'
+                runValidators: true
+            }
+        )
+            .select("availabilityStatus availability")
+            .populate('user', 'firstName email phone');
+
+        if (!profile) {
+            throw new Error('Worker profile not found');
         }
-    )
-        .select("availabilityStatus availability")
-        .populate('user', 'firstName email phone');
 
-    if (!profile) {
-        throw new Error('Worker profile not found');
+        return profile;
+    }catch (e) {
+        throw new Error(e.message);
     }
-
-    return profile;
 };
 
 export const getPendingAssignments = async (userId) => {
-    const workerProfile = await WorkerProfile.findOne({ user: userId });
+    try {
+        const workerProfile = await WorkerProfile.findOne({ user: userId });
 
-    if (!workerProfile) {
-        throw new Error('This user does not have a worker profile');
-    }
-    const pendingAssignments = await BookingAssignment.find({
-        worker: workerProfile._id,
-        status: { $in: ['sent', 'viewed'] },
-        expiryTime: { $gt: new Date() }
-    })
-        .populate({
-            path: 'booking',
-            populate: [
-                { path: 'user', select: 'firstName profileImage' },
-                { path: 'service', select: 'name' }
-            ]
+        if (!workerProfile) {
+            throw new Error('This user does not have a worker profile');
+        }
+        const pendingAssignments = await BookingAssignment.find({
+            worker: workerProfile._id,
+            status: { $in: ['sent', 'viewed'] },
+            expiryTime: { $gt: new Date() }
         })
-        .sort('-assignedAt');
-    return pendingAssignments;
+            .populate({
+                path: 'booking',
+                populate: [
+                    { path: 'user', select: 'firstName profileImage' },
+                    { path: 'service', select: 'name' }
+                ]
+            })
+            .sort('-assignedAt');
+        return pendingAssignments;
+    }catch (e) {
+        throw new Error(e.message);
+    }
 };
 
 export const getWorkerBookings = async (userId, status) => {
-    const workerProfile = await WorkerProfile.findOne({ user: userId });
+    try {
+        const workerProfile = await WorkerProfile.findOne({ user: userId });
 
-    if (!workerProfile) {
-        throw new Error('This user does not have a worker profile');
+        if (!workerProfile) {
+            throw new Error('This user does not have a worker profile');
+        }
+        const query = { worker: workerProfile._id };
+
+        if (status) {
+            query.status = status;
+        } else {
+            query.status = { $in: ['accepted', 'in-progress', 'completed'] };
+        }
+        const Bookings = await Booking.find(query)
+            .populate('user', 'firstName lastName phone profileImage')
+            .populate('service', 'name')
+            .sort('-scheduledDate');
+
+        return Bookings;
+    }catch (e) {
+        throw new Error(e.message);
     }
-    const query = { worker: workerProfile._id };
-
-    if (status) {
-        query.status = status;
-    } else {
-        query.status = { $in: ['accepted', 'in-progress', 'completed'] };
-    }
-    const Bookings = await Booking.find(query)
-        .populate('user', 'firstName lastName phone profileImage')
-        .populate('service', 'name')
-        .sort('-scheduledDate');
-
-    return Bookings;
 };
 
 export const getWorkerReviews = async (userId) => {
-    const workerProfile = await WorkerProfile.findOne({ user: userId });
+    try {
+        const workerProfile = await WorkerProfile.findOne({ user: userId });
 
-    if (!workerProfile) {
-        throw new Error('This user does not have a worker profile');
+        if (!workerProfile) {
+            throw new Error('This user does not have a worker profile');
+        }
+        const reviews = await Review.find({ worker: workerProfile._id })
+            .populate('user', 'firstName lastName email profileImage')
+            .sort('-createdAt');
+
+        return reviews;
+    }catch (e) {
+        throw new Error(e.message);
     }
-    const reviews = await Review.find({ worker: workerProfile._id })
-        .populate('user', 'firstName lastName email profileImage')
-        .sort('-createdAt');
-
-    return reviews;
 };
 
 export const updateWorkerAvailability = async (userId,availability) => {
 
-    const workerProfile = await WorkerProfile.findOne(
-        { user: userId }
-    ).select("availabilityStatus availability")
-     .populate('user', 'firstName email phone');
+    try {
+        const workerProfile = await WorkerProfile.findOne(
+            { user: userId }
+        ).select("availabilityStatus availability")
+            .populate('user', 'firstName email phone');
 
-    if (!workerProfile) {
-        throw new Error('Worker profile not found');
+        if (!workerProfile) {
+            throw new Error('Worker profile not found');
+        }
+        if (availability) workerProfile.availability = availability;
+
+        await workerProfile.save();
+
+        return workerProfile;
+    }catch (e) {
+        throw new Error(e.message);
     }
-    if (availability) workerProfile.availability = availability;
+};
 
-    await workerProfile.save();
+export const deleteworker = async (userId) => {
+    try {
+        const deletedProfile = await WorkerProfile.findOneAndDelete({ user: userId });
+        const deletedUser = await User.findByIdAndDelete(userId);
 
-    return workerProfile;
+        if (!deletedProfile || !deletedUser) {
+            throw new Error('No worker profile found.');
+        }
+
+        return deletedUser;
+
+    }catch (e) {
+        throw new Error(e.message);
+    }
 }

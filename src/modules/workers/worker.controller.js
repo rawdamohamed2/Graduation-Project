@@ -13,6 +13,7 @@ import {
     updateGeoLocation,
     updateWorkerAvailability,
     updateAvailabilityStatus,
+    deleteworker,
 } from "./worker.service.js";
 
 export const getAllWorkers = async (req, res) => {
@@ -138,3 +139,29 @@ export const getMyReviews = async (req, res) => {
         return ApiResponse.error(res, error.message);
     }
 };
+
+export const deleteMe = async (req, res) => {
+    const userId = req.user._id;
+    if (!userId) {
+        return ApiResponse.error(res, 'User id not found');
+    }
+    try {
+        const data = await deleteworker(userId);
+        await sendEmail(
+            data.email,
+            "Your profile is deleted",
+            "Your profile deleted successfully." +
+            "if you didn't make this change, please contact support immediately."
+        );
+        return ApiResponse.success(
+            res,
+            data,
+            "the worker profile was deleted successfully."
+        );
+    } catch (error) {
+        return ApiResponse.error(
+            res,
+            error.message
+        );
+    }
+}

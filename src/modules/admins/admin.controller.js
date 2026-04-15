@@ -41,3 +41,7 @@ export const createAdmin = async (req, res) => {
     }
 
 }
+
+export const deleteAdmin = async (req, res) => {
+
+}

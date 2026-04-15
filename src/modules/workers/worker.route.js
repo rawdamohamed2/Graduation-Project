@@ -9,7 +9,7 @@ import {
     toggleStatus,
     getMyAssignments,
     getMyBookings,
-    getMyReviews,
+    getMyReviews, deleteMe,
 } from "./worker.controller.js";
 import {protect} from "../../core/middleware/authMiddleware.js";
 import {authorize} from "../../core/middleware/roleMiddleware.js";
@@ -81,5 +81,11 @@ workerRouter.get('/:id',
 workerRouter.get('/',
     validate(workerSearchSchema),
     getAllWorkers
+);
+
+workerRouter.delete('/me',
+    protect,
+    authorize('worker'),
+    deleteMe
 );
 export default workerRouter;

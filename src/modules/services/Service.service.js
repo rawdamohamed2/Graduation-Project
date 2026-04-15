@@ -160,7 +160,7 @@ export const fetchAllServices = async (filters) => {
             limit: parseInt(limit)
         };
     }catch (e) {
-        throw new Error(e);
+        throw new Error(e.message);
     }
 };
 
